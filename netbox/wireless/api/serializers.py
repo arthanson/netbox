@@ -42,7 +42,7 @@ class WirelessLANSerializer(NetBoxModelSerializer):
         model = WirelessLAN
         fields = [
             'id', 'url', 'display', 'ssid', 'description', 'group', 'vlan', 'auth_type', 'auth_cipher', 'auth_psk',
-            'description', 'tenant', 'tags', 'custom_fields', 'created', 'last_updated',
+            'tenant', 'tags', 'custom_fields', 'created', 'last_updated',
         ]
 
 
