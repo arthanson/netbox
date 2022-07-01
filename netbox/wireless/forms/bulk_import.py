@@ -2,6 +2,7 @@ from dcim.choices import LinkStatusChoices
 from dcim.models import Interface
 from ipam.models import VLAN
 from netbox.forms import NetBoxModelCSVForm
+from tenancy.models import Tenant
 from utilities.forms import CSVChoiceField, CSVModelChoiceField, SlugField
 from wireless.choices import *
 from wireless.models import *
@@ -49,6 +50,12 @@ class WirelessLANCSVForm(NetBoxModelCSVForm):
         choices=WirelessAuthCipherChoices,
         required=False,
         help_text='Authentication cipher'
+    )
+    tenant = CSVModelChoiceField(
+        queryset=Tenant.objects.all(),
+        to_field_name='name',
+        required=False,
+        help_text='Assigned tenant'
     )
 
     class Meta:

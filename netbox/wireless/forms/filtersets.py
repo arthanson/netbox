@@ -3,6 +3,7 @@ from django.utils.translation import gettext as _
 
 from dcim.choices import LinkStatusChoices
 from netbox.forms import NetBoxModelFilterSetForm
+from tenancy.forms import TenancyFilterForm
 from utilities.forms import add_blank_choice, DynamicModelMultipleChoiceField, StaticSelect, TagFilterField
 from wireless.choices import *
 from wireless.models import *
@@ -24,12 +25,13 @@ class WirelessLANGroupFilterForm(NetBoxModelFilterSetForm):
     tag = TagFilterField(model)
 
 
-class WirelessLANFilterForm(NetBoxModelFilterSetForm):
+class WirelessLANFilterForm(TenancyFilterForm, NetBoxModelFilterSetForm):
     model = WirelessLAN
     fieldsets = (
         (None, ('q', 'tag')),
         ('Attributes', ('ssid', 'group_id',)),
         ('Authentication', ('auth_type', 'auth_cipher', 'auth_psk')),
+        ('Tenant', ('tenant_group_id', 'tenant_id')),
     )
     ssid = forms.CharField(
         required=False,

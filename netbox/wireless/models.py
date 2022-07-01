@@ -105,6 +105,13 @@ class WirelessLAN(WirelessAuthenticationBase, NetBoxModel):
         max_length=200,
         blank=True
     )
+    tenant = models.ForeignKey(
+        to='tenancy.Tenant',
+        on_delete=models.PROTECT,
+        related_name='wireless_lans',
+        blank=True,
+        null=True
+    )
 
     class Meta:
         ordering = ('ssid', 'pk')

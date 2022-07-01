@@ -5,6 +5,7 @@ from dcim.api.serializers import NestedInterfaceSerializer
 from ipam.api.serializers import NestedVLANSerializer
 from netbox.api import ChoiceField
 from netbox.api.serializers import NestedGroupModelSerializer, NetBoxModelSerializer
+from tenancy.api.nested_serializers import NestedTenantSerializer
 from wireless.choices import *
 from wireless.models import *
 from .nested_serializers import *
@@ -35,12 +36,13 @@ class WirelessLANSerializer(NetBoxModelSerializer):
     vlan = NestedVLANSerializer(required=False, allow_null=True)
     auth_type = ChoiceField(choices=WirelessAuthTypeChoices, required=False, allow_blank=True)
     auth_cipher = ChoiceField(choices=WirelessAuthCipherChoices, required=False, allow_blank=True)
+    tenant = NestedTenantSerializer(required=False, allow_null=True)
 
     class Meta:
         model = WirelessLAN
         fields = [
             'id', 'url', 'display', 'ssid', 'description', 'group', 'vlan', 'auth_type', 'auth_cipher', 'auth_psk',
-            'description', 'tags', 'custom_fields', 'created', 'last_updated',
+            'description', 'tenant', 'tags', 'custom_fields', 'created', 'last_updated',
         ]
 
 

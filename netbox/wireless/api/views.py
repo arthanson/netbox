@@ -27,7 +27,7 @@ class WirelessLANGroupViewSet(NetBoxModelViewSet):
 
 
 class WirelessLANViewSet(NetBoxModelViewSet):
-    queryset = WirelessLAN.objects.prefetch_related('vlan', 'tags')
+    queryset = WirelessLAN.objects.prefetch_related('vlan', 'tags', 'tenant')
     serializer_class = serializers.WirelessLANSerializer
     filterset_class = filtersets.WirelessLANFilterSet
 
