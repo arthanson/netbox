@@ -18,7 +18,7 @@ from netbox.models.features import ExportTemplatesMixin, WebhooksMixin
 from utilities import filters
 from utilities.forms import (
     CSVChoiceField, CSVMultipleChoiceField, DatePicker, DynamicModelChoiceField, DynamicModelMultipleChoiceField,
-    LaxURLField, StaticSelectMultiple, StaticSelect, add_blank_choice,
+    JSONField, LaxURLField, StaticSelectMultiple, StaticSelect, add_blank_choice,
 )
 from utilities.querysets import RestrictedQuerySet
 from utilities.validators import validate_regex
@@ -169,7 +169,7 @@ class CustomField(ExportTemplatesMixin, WebhooksMixin, ChangeLoggedModel):
             model = ct.model_class()
             instances = model.objects.filter(**{f'custom_field_data__{self.name}__isnull': False})
             for instance in instances:
-                del(instance.custom_field_data[self.name])
+                del instance.custom_field_data[self.name]
             model.objects.bulk_update(instances, ['custom_field_data'], batch_size=100)
 
     def rename_object_data(self, old_name, new_name):
@@ -343,7 +343,7 @@ class CustomField(ExportTemplatesMixin, WebhooksMixin, ChangeLoggedModel):
 
         # JSON
         elif self.type == CustomFieldTypeChoices.TYPE_JSON:
-            field = forms.JSONField(required=required, initial=initial)
+            field = JSONField(required=required, initial=initial)
 
         # Object
         elif self.type == CustomFieldTypeChoices.TYPE_OBJECT:
@@ -365,13 +365,8 @@ class CustomField(ExportTemplatesMixin, WebhooksMixin, ChangeLoggedModel):
 
         # Text
         else:
-            if self.type == CustomFieldTypeChoices.TYPE_LONGTEXT:
-                max_length = None
-                widget = forms.Textarea
-            else:
-                max_length = 255
-                widget = None
-            field = forms.CharField(max_length=max_length, required=required, initial=initial, widget=widget)
+            widget = forms.Textarea if self.type == CustomFieldTypeChoices.TYPE_LONGTEXT else None
+            field = forms.CharField(required=required, initial=initial, widget=widget)
             if self.validation_regex:
                 field.validators = [
                     RegexValidator(

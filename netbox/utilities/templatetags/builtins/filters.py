@@ -86,8 +86,8 @@ def placeholder(value):
     """
     if value not in ('', None):
         return value
-    placeholder = '<span class="text-muted">&mdash;</span>'
-    return mark_safe(placeholder)
+
+    return mark_safe('<span class="text-muted">&mdash;</span>')
 
 
 @register.filter()
@@ -144,6 +144,8 @@ def render_markdown(value):
 
         {{ md_source_text|markdown }}
     """
+    if not value:
+        return ''
 
     # Render Markdown
     html = markdown(value, extensions=['def_list', 'fenced_code', 'tables', StrikethroughExtension()])

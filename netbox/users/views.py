@@ -10,6 +10,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.decorators import method_decorator
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import View
 from social_core.backends.utils import load_backends
@@ -20,7 +21,7 @@ from netbox.authentication import get_auth_backend_display
 from netbox.config import get_config
 from utilities.forms import ConfirmationForm
 from .forms import LoginForm, PasswordChangeForm, TokenForm, UserConfigForm
-from .models import Token
+from .models import Token, UserConfig
 
 
 #
@@ -69,7 +70,13 @@ class LoginView(View):
             # Authenticate user
             auth_login(request, form.get_user())
             logger.info(f"User {request.user} successfully authenticated")
-            messages.info(request, "Logged in as {}.".format(request.user))
+            messages.info(request, f"Logged in as {request.user}.")
+
+            # Ensure the user has a UserConfig defined. (This should normally be handled by
+            # create_userconfig() on user creation.)
+            if not hasattr(request.user, 'config'):
+                config = get_config()
+                UserConfig(user=request.user, data=config.DEFAULT_USER_PREFERENCES).save()
 
             return self.redirect_to_next(request, logger)
 
@@ -85,7 +92,7 @@ class LoginView(View):
         data = request.POST if request.method == "POST" else request.GET
         redirect_url = data.get('next', settings.LOGIN_REDIRECT_URL)
 
-        if redirect_url and redirect_url.startswith('/'):
+        if redirect_url and url_has_allowed_host_and_scheme(redirect_url, allowed_hosts=None):
             logger.debug(f"Redirecting user to {redirect_url}")
         else:
             if redirect_url:

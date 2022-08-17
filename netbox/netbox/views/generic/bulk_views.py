@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldDoesNotExist, ValidationError
 from django.db import transaction, IntegrityError
 from django.db.models import ManyToManyField, ProtectedError
+from django.db.models.fields.reverse_related import ManyToManyRel
 from django.forms import Form, ModelMultipleChoiceField, MultipleHiddenInput
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -484,7 +485,7 @@ class BulkEditView(GetReturnURLMixin, BaseMultiObjectView):
                         setattr(obj, name, None if model_field.null else '')
 
                 # ManyToManyFields
-                elif isinstance(model_field, ManyToManyField):
+                elif isinstance(model_field, (ManyToManyField, ManyToManyRel)):
                     if form.cleaned_data[name]:
                         getattr(obj, name).set(form.cleaned_data[name])
                 # Normal fields
@@ -632,7 +633,7 @@ class BulkRenameView(GetReturnURLMixin, BaseMultiObjectView):
             replace = form.cleaned_data['replace']
             if form.cleaned_data['use_regex']:
                 try:
-                    obj.new_name = re.sub(find, replace, obj.name)
+                    obj.new_name = re.sub(find, replace, obj.name or '')
                 # Catch regex group reference errors
                 except re.error:
                     obj.new_name = obj.name
@@ -794,6 +795,7 @@ class BulkComponentCreateView(GetReturnURLMixin, BaseMultiObjectView):
     model_form = None
     filterset = None
     table = None
+    patterned_fields = ('name', 'label')
 
     def get_required_permission(self):
         return f'dcim.add_{self.queryset.model._meta.model_name}'
@@ -829,16 +831,16 @@ class BulkComponentCreateView(GetReturnURLMixin, BaseMultiObjectView):
 
                         for obj in data['pk']:
 
-                            names = data['name_pattern']
-                            labels = data['label_pattern'] if 'label_pattern' in data else None
-                            for i, name in enumerate(names):
-                                label = labels[i] if labels else None
-
+                            pattern_count = len(data[f'{self.patterned_fields[0]}_pattern'])
+                            for i in range(pattern_count):
                                 component_data = {
-                                    self.parent_field: obj.pk,
-                                    'name': name,
-                                    'label': label
+                                    self.parent_field: obj.pk
                                 }
+
+                                for field_name in self.patterned_fields:
+                                    if data.get(f'{field_name}_pattern'):
+                                        component_data[field_name] = data[f'{field_name}_pattern'][i]
+
                                 component_data.update(data)
                                 component_form = self.model_form(component_data)
                                 if component_form.is_valid():

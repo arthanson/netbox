@@ -494,10 +494,10 @@ class RackTestCase(TestCase, ChangeLoggedFilterSetTests):
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 2)
 
     def test_serial(self):
-        params = {'serial': 'ABC'}
-        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
-        params = {'serial': 'abc'}
-        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
+        params = {'serial': ['ABC', 'DEF']}
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 2)
+        params = {'serial': ['abc', 'def']}
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 2)
 
     def test_tenant(self):
         tenants = Tenant.objects.all()[:2]
@@ -1849,13 +1849,20 @@ class ModuleTestCase(TestCase, ChangeLoggedFilterSetTests):
         params = {'module_type': [module_types[0].model, module_types[1].model]}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 6)
 
+    def test_module_bay(self):
+        module_bays = ModuleBay.objects.all()[:2]
+        params = {'module_bay_id': [module_bays[0].pk, module_bays[1].pk]}
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 2)
+
     def test_device(self):
         device_types = Device.objects.all()[:2]
         params = {'device_id': [device_types[0].pk, device_types[1].pk]}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 6)
 
     def test_serial(self):
-        params = {'asset_tag': ['A', 'B']}
+        params = {'serial': ['A', 'B']}
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 2)
+        params = {'serial': ['a', 'b']}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 2)
 
     def test_asset_tag(self):
@@ -3408,10 +3415,10 @@ class InventoryItemTestCase(TestCase, ChangeLoggedFilterSetTests):
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 2)
 
     def test_serial(self):
-        params = {'serial': 'ABC'}
-        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
-        params = {'serial': 'abc'}
-        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
+        params = {'serial': ['ABC', 'DEF']}
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 2)
+        params = {'serial': ['abc', 'def']}
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 2)
 
     def test_component_type(self):
         params = {'component_type': 'dcim.interface'}

@@ -560,9 +560,7 @@ class RackRoleBulkDeleteView(generic.BulkDeleteView):
 #
 
 class RackListView(generic.ObjectListView):
-    queryset = Rack.objects.prefetch_related(
-        'site', 'location', 'tenant', 'role', 'devices__device_type'
-    ).annotate(
+    queryset = Rack.objects.prefetch_related('devices__device_type').annotate(
         device_count=count_related(Device, 'rack')
     )
     filterset = filtersets.RackFilterSet
@@ -1786,6 +1784,12 @@ class DeviceBulkDeleteView(generic.BulkDeleteView):
     table = tables.DeviceTable
 
 
+class DeviceBulkRenameView(generic.BulkRenameView):
+    queryset = Device.objects.all()
+    filterset = filtersets.DeviceFilterSet
+    table = tables.DeviceTable
+
+
 #
 # Devices
 #
@@ -2709,6 +2713,7 @@ class DeviceBulkAddModuleBayView(generic.BulkComponentCreateView):
     filterset = filtersets.DeviceFilterSet
     table = tables.DeviceTable
     default_return_url = 'dcim:device_list'
+    patterned_fields = ('name', 'label', 'position')
 
 
 class DeviceBulkAddDeviceBayView(generic.BulkComponentCreateView):
@@ -3084,7 +3089,7 @@ class VirtualChassisAddMemberView(ObjectPermissionRequiredMixin, GetReturnURLMix
             if membership_form.is_valid():
 
                 membership_form.save()
-                msg = 'Added member <a href="{}">{}</a>'.format(device.get_absolute_url(), escape(device))
+                msg = f'Added member <a href="{device.get_absolute_url()}">{escape(device)}</a>'
                 messages.success(request, mark_safe(msg))
 
                 if '_addanother' in request.POST:
@@ -3129,8 +3134,7 @@ class VirtualChassisRemoveMemberView(ObjectPermissionRequiredMixin, GetReturnURL
         # Protect master device from being removed
         virtual_chassis = VirtualChassis.objects.filter(master=device).first()
         if virtual_chassis is not None:
-            msg = 'Unable to remove master device {} from the virtual chassis.'.format(escape(device))
-            messages.error(request, mark_safe(msg))
+            messages.error(request, f'Unable to remove master device {device} from the virtual chassis.')
             return redirect(device.get_absolute_url())
 
         if form.is_valid():

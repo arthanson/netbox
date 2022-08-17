@@ -29,7 +29,7 @@ django.utils.encoding.force_text = force_str
 # Environment setup
 #
 
-VERSION = '3.2.5'
+VERSION = '3.2.10-dev'
 
 # Hostname
 HOSTNAME = platform.node()
@@ -476,11 +476,25 @@ if SENTRY_ENABLED:
 # Django social auth
 #
 
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.social_auth.associate_by_email',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'netbox.authentication.user_default_groups_handler',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
+
 # Load all SOCIAL_AUTH_* settings from the user configuration
 for param in dir(configuration):
     if param.startswith('SOCIAL_AUTH_'):
         globals()[param] = getattr(configuration, param)
 
+# Force usage of PostgreSQL's JSONB field for extra data
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
 
 
