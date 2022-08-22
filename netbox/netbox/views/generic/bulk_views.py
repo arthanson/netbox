@@ -171,7 +171,7 @@ class ObjectListView(BaseMultiObjectView, ActionsMixin, TableMixin):
             'table': table,
             'actions': actions,
             'filter_form': self.filterset_form(request.GET, label_suffix='') if self.filterset_form else None,
-            'prerequisite_model': get_prerequisite_model(self.queryset),
+            'prerequisite_model': get_prerequisite_model(self.queryset, request.user),
             **self.get_extra_context(request),
         }
 

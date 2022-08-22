@@ -352,7 +352,7 @@ class ObjectEditView(GetReturnURLMixin, BaseObjectView):
             'object': obj,
             'form': form,
             'return_url': self.get_return_url(request, obj),
-            'prerequisite_model': get_prerequisite_model(self.queryset),
+            'prerequisite_model': get_prerequisite_model(self.queryset, request.user),
             **self.get_extra_context(request, obj),
         })
 
